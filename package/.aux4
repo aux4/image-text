@@ -1,0 +1,105 @@
+{
+  "scope": "aux4",
+  "name": "image-text",
+  "version": "1.0.0",
+  "description": "Extract text from images using OCR (tesseract)",
+  "license": "Apache-2.0",
+  "tags": [
+    "image",
+    "ocr",
+    "tesseract",
+    "text",
+    "extract"
+  ],
+  "system": [
+    [
+      "test:tesseract --version",
+      "brew:tesseract",
+      "apt:tesseract-ocr",
+      "dnf:tesseract",
+      "apk:tesseract-ocr"
+    ]
+  ],
+  "profiles": [
+    {
+      "name": "main",
+      "commands": [
+        {
+          "name": "image",
+          "execute": [
+            "profile:image"
+          ],
+          "help": {
+            "text": "Image commands"
+          }
+        }
+      ]
+    },
+    {
+      "name": "image",
+      "commands": [
+        {
+          "name": "text",
+          "execute": [
+            "tesseract ${input} stdout -l ${lang} --psm ${psm}"
+          ],
+          "help": {
+            "text": "Extract text from an image using OCR",
+            "variables": [
+              {
+                "name": "input",
+                "text": "Input image file",
+                "arg": true
+              },
+              {
+                "name": "lang",
+                "text": "OCR language (e.g., eng, spa, deu, fra)",
+                "default": "eng"
+              },
+              {
+                "name": "psm",
+                "text": "Page segmentation mode (0-13)",
+                "default": "3"
+              }
+            ]
+          }
+        },
+        {
+          "name": "pdf",
+          "execute": [
+            "set:listfile=!mktemp",
+            "json:echo value(input*)",
+            "each:echo ${item} >> ${listfile}",
+            "set:first=!head -1 ${listfile}",
+            "set:basename=!echo ${first} | sed 's/\\.[^.]*$//'",
+            "set:out=!test -n value(output) && echo value(output) || echo ${basename}",
+            "nout:tesseract ${listfile} ${out} -l ${lang} pdf",
+            "nout:rm -f ${listfile}",
+            "log:${out}.pdf"
+          ],
+          "help": {
+            "text": "Generate a searchable PDF from images using OCR",
+            "variables": [
+              {
+                "name": "input",
+                "text": "Input image file(s)",
+                "arg": true,
+                "multiple": true
+              },
+              {
+                "name": "output",
+                "text": "Output PDF path without extension (default: first input name)",
+                "default": ""
+              },
+              {
+                "name": "lang",
+                "text": "OCR language (e.g., eng, spa, deu, fra)",
+                "default": "eng"
+              }
+            ]
+          }
+        }
+      ]
+    }
+  ]
+}

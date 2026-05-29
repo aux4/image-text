@@ -1,0 +1,27 @@
+name: Publish Package
+
+on:
+  push:
+    tags:
+      - 'v*'
+
+jobs:
+  publish:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Install dependencies
+        run: sudo apt-get install -y tesseract-ocr imagemagick
+
+      - name: Install aux4
+        uses: aux4/setup-aux4-action@v1
+
+      - name: Run tests
+        working-directory: package
+        run: aux4 test run
+
+      - name: Publish
+        uses: aux4/publish-package-action@v1
+        with:
+          token: ${{ secrets.AUX4_TOKEN }}
