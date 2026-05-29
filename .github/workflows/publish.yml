@@ -4,24 +4,64 @@ on:
   push:
     branches:
       - main
+    paths:
+      - '**'
+      - '!.github/**'
+      - '!README.md'
+      - '!LICENSE'
+      - '!.gitignore'
+
+  workflow_dispatch:
+    inputs:
+      level:
+        description: 'Release level (patch, minor, major)'
+        required: true
+        default: 'patch'
+        type: choice
+        options:
+          - patch
+          - minor
+          - major
+
+concurrency:
+  group: publish-package
+  cancel-in-progress: false
+
+permissions:
+  contents: write
 
 jobs:
-  publish:
+  test:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
+      - name: Checkout repository
+        uses: actions/checkout@v6
 
       - name: Install dependencies
         run: sudo apt-get install -y tesseract-ocr imagemagick
 
+      - name: Test
+        uses: aux4/test-package-action@v1
+
+  publish:
+    needs: [test]
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v6
+        with:
+          fetch-depth: 0
+
       - name: Install aux4
-        uses: aux4/setup-aux4-action@v1
+        run: |
+          curl -fsSL https://aux4.sh | sh
+          echo "$HOME/.aux4.config/packages/aux4/aux4" >> $GITHUB_PATH
 
-      - name: Run tests
-        working-directory: package
-        run: aux4 test run
-
-      - name: Publish
+      - name: Publish package
         uses: aux4/publish-package-action@v1
         with:
-          token: ${{ secrets.AUX4_TOKEN }}
+          working_directory: package
+          package_directory: .
+          level: ${{ inputs.level || 'patch' }}
+          aux4_token: ${{ secrets.AUX4_ACCESS_TOKEN }}
+          github_token: ${{ secrets.GITHUB_TOKEN }}
