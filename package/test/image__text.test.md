@@ -1,7 +1,7 @@
 # image text
 
 ```beforeEach
-magick -size 200x50 xc:white -pointsize 24 -gravity center -draw "text 0,0 'Hello World'" hello.png
+convert -size 200x50 xc:white -pointsize 24 -gravity center -annotate +0+0 "Hello World" hello.png
 ```
 
 ```afterEach

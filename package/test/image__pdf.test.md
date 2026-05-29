@@ -1,8 +1,8 @@
 # image pdf
 
 ```beforeEach
-magick -size 200x50 xc:white -pointsize 24 -gravity center -draw "text 0,0 'Page One'" page1.png
-magick -size 200x50 xc:white -pointsize 24 -gravity center -draw "text 0,0 'Page Two'" page2.png
+convert -size 200x50 xc:white -pointsize 24 -gravity center -annotate +0+0 "Page One" page1.png
+convert -size 200x50 xc:white -pointsize 24 -gravity center -annotate +0+0 "Page Two" page2.png
 ```
 
 ```afterEach
